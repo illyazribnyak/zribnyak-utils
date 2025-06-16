@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор дат</title>
+
+    <style>
+        .container {
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+        }
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            border: 1px solid #007bff;
+            background: none;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 16px;
+        }
+        .tab-button.active {
+            background: #007bff;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .row {
+    display: flex;
+    justify-content: space-between;  /* Рівномірний розподіл */
+    gap: 10px;  /* Відступи між полями */
+}
+
+.col {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Відступ між лейблом і інпутом */
+}
+
+        .result-box {
+            margin-top: 20px;
+            padding: 10px;
+            border: 2px solid #007bff;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            showTab('tab1');  // Відобразити першу вкладку при завантаженні сторінки
+        });
+
+        function submitForm(event, formId) {
+            event.preventDefault(); // Запобігаємо перезавантаженню сторінки
+            const form = document.getElementById(formId);
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())  // Очікуємо JSON-відповідь
+            .then(data => {
+                if (data.result) {
+                    document.getElementById("result-box").innerHTML = `<span style="color:green;">${data.result}</span>`;
+                } else {
+                    document.getElementById("result-box").innerHTML = `<span style="color:red;">${data.error}</span>`;
+                }
+            })
+            .catch(error => console.error("Помилка:", error));
+        }
+    </script>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="tab-buttons">
+            <button class="tab-button active" data-tab="tab1" onclick="showTab('tab1')">Різниця між датами</button>
+            <button class="tab-button" data-tab="tab2" onclick="showTab('tab2')">Додавання / Віднімання</button>
+        </div>
+
+
+        <div id="tab1" class="tab-content active">
+            <h2>Різниця між датами</h2>
+            <form id="form-difference" method="post" action="{% url 'calculate_days' %}" onsubmit="submitForm(event, 'form-difference')">
+                {% csrf_token %}
+                <div>
+                    <label>{{ days_form.start_date.label_tag }}</label>
+                    {{ days_form.start_date }}
+                </div>
+                <div>
+                    <label>{{ days_form.end_date.label_tag }}</label>
+                    {{ days_form.end_date }}
+                </div>
+                <button type="submit">Розрахувати</button>
+            </form>
+        </div>
+
+
+        <div id="tab2" class="tab-content">
+            <h2>Додавання / Віднімання дати</h2>
+            <form id="form-calculate" method="post" action="{% url 'calculate_date' %}" onsubmit="submitForm(event, 'form-calculate')">
+                {% csrf_token %}
+                <div>
+                    <label>{{ date_form.start_date.label_tag }}</label>
+                    {{ date_form.start_date }}
+                </div>
+                <div>
+                    <label>{{ date_form.operation.label_tag }}</label>
+                    {{ date_form.operation }}
+                </div>
+              <div class="row">
+    <div class="col">
+        <label>Роки:</label> {{ date_form.years_to_add }}
+    </div>
+    <div class="col">
+        <label>Місяці:</label> {{ date_form.months_to_add }}
+    </div>
+    <div class="col">
+        <label>Дні:</label> {{ date_form.days_to_add }}
+    </div>
+</div>
+                <button type="submit">Обчислити</button>
+            </form>
+        </div>
+
+
+        <div id="result-box" class="result-box">
+            Введіть дані та натисніть кнопку!
+        </div>
+    </div>
+
+</body>
+</html>

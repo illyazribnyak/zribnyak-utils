@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Робоча спроможність</title>
+</head>
+<body>
+    <h1>Обчислення робочої спроможності</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Розрахувати</button>
+    </form>
+
+    {% if result %}
+        <h2>Результат: {{ result }}</h2>
+    {% endif %}
+</body>
+</html>
